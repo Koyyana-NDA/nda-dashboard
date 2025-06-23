@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NDA Dashboard</title>
+    <script>
+        async function loadJobs() {
+            const res = await fetch("http://localhost:8000/jobs");
+            const jobs = await res.json();
+            const table = document.getElementById("jobTable");
+            table.innerHTML = "<tr><th>Job Code</th><th>Invoiced</th><th>Costs</th><th>Forecasted Margin</th></tr>";
+            jobs.forEach(job => {
+                table.innerHTML += `<tr>
+                    <td>${job.job_code}</td>
+                    <td>£${job.total_invoiced}</td>
+                    <td>£${job.total_costs}</td>
+                    <td>£${job.forecasted_margin}</td>
+                </tr>`;
+            });
+        }
+    </script>
+</head>
+<body onload="loadJobs()">
+    <h1>NDA Financial Dashboard</h1>
+    <table id="jobTable" border="1"></table>
+</body>
+</html>

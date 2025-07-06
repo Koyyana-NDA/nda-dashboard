@@ -4,7 +4,7 @@
     <title>NDA Dashboard</title>
     <script>
         async function loadJobs() {
-            const res = await fetch("http://localhost:8000/jobs");
+            const res = await fetch("/jobs");
             const jobs = await res.json();
             const table = document.getElementById("jobTable");
             table.innerHTML = "<tr><th>Job Code</th><th>Invoiced</th><th>Costs</th><th>Forecasted Margin</th></tr>";

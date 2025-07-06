@@ -3,6 +3,9 @@ from pathlib import Path
 
 TOKEN_FILE = Path("backend/tokens.json")
 
+# Ensure the folder exists
+TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+
 def save_tokens(access_token, refresh_token, realm_id):
     data = {
         "access_token": access_token,

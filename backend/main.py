@@ -1,14 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
-from .quickbooks_auth import get_qbo_client  # We’ll set this up next
 from fastapi.responses import RedirectResponse
-from .quickbooks_auth import get_auth_client, ACCOUNTING_SCOPE
-from fastapi import Request
-from .quickbooks_auth import get_auth_client
-from .token_store import save_tokens
-
+from backend.quickbooks_auth import get_auth_client, get_qbo_client, ACCOUNTING_SCOPE
+from backend.token_store import save_tokens
 
 app = FastAPI()
 
@@ -71,46 +67,36 @@ jobs = [
     )
 ]
 
-# Login Route
 @app.get("/login")
-def login_to_quicbooks():
+def login():
     auth_client = get_auth_client()
     auth_url = auth_client.get_authorization_url([ACCOUNTING_SCOPE])
     return RedirectResponse(auth_url)
 
-# Callback
 @app.get("/callback")
-def quickbooks_callback(request: Request):
+def callback(request: Request):
     code = request.query_params.get("code")
     realm_id = request.query_params.get("realmId")
 
     if not code or not realm_id:
         return {"error": "Missing code or realm ID from QuickBooks"}
 
-    # Exchange code for token
     auth_client = get_auth_client()
     try:
-        auth_client.get_bearer_token(code)
-
-        # Save to tokens.json
+        auth_client.get_bearer_token(code, realm_id=realm_id)
         save_tokens(
             auth_client.access_token,
             auth_client.refresh_token,
             realm_id
         )
-        return {
-            "message": "Successfully connected to QuickBooks and tokens saved!",
-            "realm_id": realm_id
-        }
+        return {"message": "Successfully connected to QuickBooks and tokens saved!", "realm_id": realm_id}
     except Exception as e:
         return {"error": str(e)}
 
-# Show all jobs
 @app.get("/jobs", response_model=List[JobData])
 def get_jobs():
     return jobs
 
-# Show single job by job_code
 @app.get("/jobs/{job_code}", response_model=JobData)
 def get_job(job_code: str):
     for job in jobs:

@@ -1,10 +1,10 @@
 import json
+import os
 from pathlib import Path
 
-TOKEN_FILE = Path("backend/tokens.json")
-
-# Ensure the folder exists
-TOKEN_FILE.parent.mkdir(parents=True, exist_ok=True)
+# 🔄 Makes the path dynamic no matter where the app runs (Windows, Linux, Render cloud)
+BASE_DIR = Path(__file__).resolve().parent
+TOKEN_FILE = BASE_DIR / "tokens.json"
 
 def save_tokens(access_token, refresh_token, realm_id):
     data = {

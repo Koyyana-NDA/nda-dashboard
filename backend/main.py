@@ -5,10 +5,8 @@ from typing import List
 from fastapi.responses import RedirectResponse, JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from backend.quickbooks_auth import get_qbo_client, get_auth_client, ACCOUNTING_SCOPE
-from backend.token_store import save_tokens
-from backend.auth import login_check
-from backend.file_upload import router as upload_router
+from auth import login_check
+from file_upload import router as upload_router
 
 app = FastAPI()
 

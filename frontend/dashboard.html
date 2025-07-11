@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>NDA Dashboard</title>
+</head>
+<body>
+  <h1>NDA Dashboard</h1>
+  <div id="user-info"></div>
+  <form id="uploadForm">
+    <input type="file" id="upload" required />
+    <select id="fileType">
+      <option value="pnl">P&L Report</option>
+      <option value="invoice">Invoice Report</option>
+      <option value="cvr">CVR Sheet</option>
+    </select>
+    <button type="submit">Upload</button>
+  </form>
+  <div id="uploadStatus"></div>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user) location.href = "/";
+    document.getElementById("user-info").innerText = `Logged in as ${user.username} (${user.role})`;
+
+    const uploadForm = document.getElementById("uploadForm");
+    uploadForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const fileInput = document.getElementById("upload");
+      const fileType = document.getElementById("fileType").value;
+      const formData = new FormData();
+      formData.append("file", fileInput.files[0]);
+      const res = await fetch(`/upload/${fileType}`, {
+        method: "POST",
+        body: formData
+      });
+      const result = await res.json();
+      document.getElementById("uploadStatus").innerText = result.message || result.detail;
+    }
+  </script>
+</body>
+</html>

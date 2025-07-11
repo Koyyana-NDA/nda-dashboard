@@ -1,26 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>NDA Dashboard</title>
-    <script>
-        async function loadJobs() {
-            const res = await fetch("/jobs");
-            const jobs = await res.json();
-            const table = document.getElementById("jobTable");
-            table.innerHTML = "<tr><th>Job Code</th><th>Invoiced</th><th>Costs</th><th>Forecasted Margin</th></tr>";
-            jobs.forEach(job => {
-                table.innerHTML += `<tr>
-                    <td>${job.job_code}</td>
-                    <td>£${job.total_invoiced}</td>
-                    <td>£${job.total_costs}</td>
-                    <td>£${job.forecasted_margin}</td>
-                </tr>`;
-            });
-        }
-    </script>
+  <title>NDA Login</title>
 </head>
-<body onload="loadJobs()">
-    <h1>NDA Financial Dashboard</h1>
-    <table id="jobTable" border="1"></table>
+<body>
+  <h2>Login to NDA Dashboard</h2>
+  <form id="loginForm">
+    <input name="username" placeholder="Username" required /> <br>
+    <input type="password" name="password" placeholder="Password" required /> <br>
+    <button type="submit">Login</button>
+  </form>
+  <div id="status"></div>
+
+  <script>
+    const form = document.getElementById("loginForm");
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const res = await fetch("/login", {
+        method: "POST",
+        body: formData
+      });
+      const data = await res.json();
+      if (res.ok) {
+        document.getElementById("status").innerText = `Welcome ${data.username} (${data.role})`;
+        localStorage.setItem("user", JSON.stringify(data));
+        window.location.href = "/dashboard.html";
+      } else {
+        document.getElementById("status").innerText = data.detail;
+      }
+    }
+  </script>
 </body>
 </html>

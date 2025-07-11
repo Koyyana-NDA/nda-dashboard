@@ -1,33 +1,14 @@
+from fastapi import APIRouter, UploadFile, File
 import os
-import shutil
-from fastapi import UploadFile
-from pathlib import Path
 
-UPLOAD_DIR = Path("backend/uploads")
-UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+router = APIRouter()
 
-ALLOWED_EXTENSIONS = {".csv", ".xlsx"}
+UPLOAD_DIR = "uploaded_files"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
 
-# This function saves file to the uploads folder
-def save_uploaded_file(uploaded_file: UploadFile, save_as: str) -> str:
-    ext = Path(uploaded_file.filename).suffix
-    if ext not in ALLOWED_EXTENSIONS:
-        raise ValueError("Unsupported file type")
-
-    destination = UPLOAD_DIR / f"{save_as}{ext}"
-    with destination.open("wb") as buffer:
-        shutil.copyfileobj(uploaded_file.file, buffer)
-
-    return str(destination)
-
-# Helper to list files by prefix
-def list_uploaded_files(prefix: str = ""):
-    return [f.name for f in UPLOAD_DIR.glob(f"{prefix}*")]
-
-# Helper to delete uploaded file
-def delete_uploaded_file(filename: str):
-    file_path = UPLOAD_DIR / filename
-    if file_path.exists():
-        file_path.unlink()
-        return True
-    return False
+@router.post("/upload/{file_type}")
+async def upload_file(file_type: str, file: UploadFile = File(...)):
+    save_path = os.path.join(UPLOAD_DIR, f"{file_type}_{file.filename}")
+    with open(save_path, "wb") as f:
+        f.write(await file.read())
+    return {"message": f"{file_type} report uploaded successfully!"}

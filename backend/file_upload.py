@@ -1,16 +1,33 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
-from pathlib import Path
+import os
 import shutil
+from fastapi import UploadFile
+from pathlib import Path
 
-router = APIRouter()
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+UPLOAD_DIR = Path("backend/uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
-@router.post("/upload/{file_type}")
-def upload_file(file_type: str, file: UploadFile = File(...)):
-    if file_type not in ["pnl", "invoice", "cvr"]:
-        raise HTTPException(status_code=400, detail="Invalid file type")
-    dest = UPLOAD_DIR / f"{file_type}.csv"
-    with open(dest, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
-    return {"message": f"{file_type} uploaded successfully."}
+ALLOWED_EXTENSIONS = {".csv", ".xlsx"}
+
+# This function saves file to the uploads folder
+def save_uploaded_file(uploaded_file: UploadFile, save_as: str) -> str:
+    ext = Path(uploaded_file.filename).suffix
+    if ext not in ALLOWED_EXTENSIONS:
+        raise ValueError("Unsupported file type")
+
+    destination = UPLOAD_DIR / f"{save_as}{ext}"
+    with destination.open("wb") as buffer:
+        shutil.copyfileobj(uploaded_file.file, buffer)
+
+    return str(destination)
+
+# Helper to list files by prefix
+def list_uploaded_files(prefix: str = ""):
+    return [f.name for f in UPLOAD_DIR.glob(f"{prefix}*")]
+
+# Helper to delete uploaded file
+def delete_uploaded_file(filename: str):
+    file_path = UPLOAD_DIR / filename
+    if file_path.exists():
+        file_path.unlink()
+        return True
+    return False

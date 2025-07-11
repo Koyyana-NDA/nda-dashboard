@@ -1,14 +1,23 @@
 from fastapi import APIRouter, UploadFile, File
-import os
+from fastapi.responses import JSONResponse
+from pathlib import Path
+import shutil
 
 router = APIRouter()
 
-UPLOAD_DIR = "uploaded_files"
-os.makedirs(UPLOAD_DIR, exist_ok=True)
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 @router.post("/upload/{file_type}")
 async def upload_file(file_type: str, file: UploadFile = File(...)):
-    save_path = os.path.join(UPLOAD_DIR, f"{file_type}_{file.filename}")
-    with open(save_path, "wb") as f:
-        f.write(await file.read())
-    return {"message": f"{file_type} report uploaded successfully!"}
+    valid_types = {"pnl", "invoice", "cvr"}
+    if file_type not in valid_types:
+        return JSONResponse(status_code=400, content={"detail": "Invalid file type"})
+
+    filename = f"{file_type}_{file.filename}"
+    file_path = UPLOAD_DIR / filename
+
+    with file_path.open("wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+
+    return {"message": f"{file_type.upper()} file uploaded successfully!"}

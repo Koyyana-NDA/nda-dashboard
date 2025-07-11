@@ -1,3 +1,4 @@
+
 from fastapi import FastAPI, HTTPException, Request, Form
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -5,8 +6,8 @@ from typing import List
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
-from auth import login_check
-from file_upload import router as upload_router
+from .auth import login_check
+from .file_upload import router as upload_router
 
 app = FastAPI()
 
